@@ -1,11 +1,10 @@
 <?php
     session_start();
-    // ตรวจสอบความปลอดภัย: ถ้าไม่มี Session ID ให้ดีดกลับไปหน้าแรก
+    include_once("connectdb.php"); // เชื่อมต่อฐานข้อมูลของคุณ
+
+    // ตรวจสอบสิทธิ์การเข้าใช้งาน
     if (empty($_SESSION['aid'])) {
-        echo "<div style='text-align:center; margin-top:50px;'>";
-        echo "<h3>Access Denied! กำลังกลับไปหน้าหลัก...</h3>";
-        echo "</div>";
-        echo "<meta http-equiv='refresh' content='2;url=index.php'>";
+        echo "<script>alert('กรุณาเข้าสู่ระบบ'); window.location='login.php';</script>";
         exit;
     }
 ?>
@@ -14,80 +13,96 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>จัดการออเดอร์ - ธิชาดา</title>
+    <title>จัดการสินค้า - ธิชาดา</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        body { background-color: #f0f5f9; font-family: 'Sarabun', sans-serif; }
-        .sidebar { background-color: #ffffff; min-height: 100vh; border-right: 1px solid #dee2e6; }
-        .nav-link { color: #495057; transition: 0.3s; margin-bottom: 5px; border-radius: 8px; }
-        .nav-link:hover, .nav-link.active { background-color: #e7f1ff; color: #0d6efd; }
-        .main-content { padding: 30px; }
-        .card { border: none; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .status-badge { font-weight: normal; padding: 5px 12px; border-radius: 20px; }
+        :root { --main-blue: #007bff; --light-blue: #f0f8ff; }
+        body { background-color: var(--light-blue); font-family: 'Sarabun', sans-serif; }
+        .navbar-custom { background-color: var(--main-blue); color: white; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .product-img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
+        .table thead { background-color: #e9ecef; }
+        .btn-add { border-radius: 20px; padding: 8px 20px; }
     </style>
 </head>
 <body>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-3 col-lg-2 sidebar p-3 shadow-sm">
-            <h4 class="text-primary text-center mb-4 fw-bold">Admin Panel</h4>
-            <div class="text-center mb-4">
-                <i class="bi bi-person-circle fs-1 text-secondary"></i>
-                <p class="mt-2 mb-0 small text-muted">ผู้ดูแลระบบ:</p>
-                <h6 class="fw-bold text-dark"><?php echo $_SESSION['aname']; ?></h6>
-            </div>
-            <hr>
-            <nav class="nav flex-column">
-                <a class="nav-link" href="index2.php"><i class="bi bi-house-door me-2"></i> หน้าหลัก</a>
-                <a class="nav-link" href="product.php"><i class="bi bi-box-seam me-2"></i> จัดการสินค้า</a>
-                <a class="nav-link active" href="orders.php"><i class="bi bi-cart-check me-2"></i> จัดการออเดอร์</a>
-                <a class="nav-link" href="customer.php"><i class="bi bi-people me-2"></i> จัดการลูกค้า</a>
-                <hr>
-                <a class="nav-link text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i> ออกจากระบบ</a>
-            </nav>
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="index2.php"><i class="bi bi-shop me-2"></i>ธิชาดา Store</a>
+        <div class="navbar-text text-white">
+            <i class="bi bi-person-circle"></i> แอดมิน: <?php echo $_SESSION['aname']; ?>
         </div>
+    </div>
+</nav>
 
-        <div class="col-md-9 col-lg-10 main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold text-primary"><i class="bi bi-list-stars"></i> รายการสั่งซื้อสินค้า</h2>
-                <button class="btn btn-primary btn-sm rounded-pill px-3"><i class="bi bi-download me-1"></i> Export รายงาน</button>
-            </div>
+<div class="container">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h3 class="fw-bold text-primary"><i class="bi bi-box-seam"></i> รายการสินค้าทั้งหมด</h3>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <a href="product_add.php" class="btn btn-primary btn-add shadow">
+                <i class="bi bi-plus-circle me-1"></i> เพิ่มสินค้าใหม่
+            </a>
+        </div>
+    </div>
 
-            <div class="card p-4">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>รหัสสั่งซื้อ</th>
-                                <th>ชื่อลูกค้า</th>
-                                <th>วันที่สั่งซื้อ</th>
-                                <th>ยอดรวม</th>
-                                <th>สถานะ</th>
-                                <th class="text-center">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>#ORD-001</td>
-                                <td>คุณสมชาย ใจดี</td>
-                                <td>04 ก.พ. 2026</td>
-                                <td class="fw-bold">1,500 ฿</td>
-                                <td><span class="badge bg-warning text-dark status-badge">รอชำระเงิน</span></td>
-                                <td class="text-center">
-                                    <button class="btn btn-outline-info btn-sm"><i class="bi bi-eye"></i></button>
-                                    <button class="btn btn-outline-success btn-sm"><i class="bi bi-check-lg"></i></button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ลำดับ</th>
+                            <th>รูปภาพ</th>
+                            <th>ชื่อสินค้า</th>
+                            <th>หมวดหมู่</th>
+                            <th>ราคา</th>
+                            <th>จำนวน</th>
+                            <th class="text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        // สมมติการดึงข้อมูลจากตาราง products
+                        $sql = "SELECT * FROM products ORDER BY p_id DESC";
+                        $rs = mysqli_query($conn, $sql);
+                        $i = 1;
+                        
+                        while($data = mysqli_fetch_array($rs)) {
+                        ?>
+                        <tr>
+                            <td class="ps-4"><?php echo $i++; ?></td>
+                            <td>
+                                <img src="images/<?php echo $data['p_img']; ?>" class="product-img border" onerror="this.src='https://via.placeholder.com/50'">
+                            </td>
+                            <td>
+                                <span class="fw-bold"><?php echo $data['p_name']; ?></span>
+                                <div class="small text-muted">ID: <?php echo $data['p_id']; ?></div>
+                            </td>
+                            <td><?php echo $data['p_type']; ?></td>
+                            <td class="text-primary fw-bold"><?php echo number_format($data['p_price'], 2); ?> ฿</td>
+                            <td><?php echo $data['p_stock']; ?> ชิ้น</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a href="product_edit.php?id=<?php echo $data['p_id']; ?>" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="product_delete.php?id=<?php echo $data['p_id']; ?>" 
+                                       class="btn btn-sm btn-outline-danger" 
+                                       onclick="return confirm('ยืนยันการลบสินค้าชิ้นนี้?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php } ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    <footer class="text-center my-5 text-muted">

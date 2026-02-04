@@ -1,11 +1,5 @@
 <?php
-    session_start();
-    // ตรวจสอบสิทธิ์การเข้าใช้งาน (ใช้ empty เพื่อความถูกต้องตามมาตรฐาน PHP)
-    if (empty($_SESSION['aid'])) {
-        echo "<div class='alert alert-danger m-5 text-center'>Access Denied! กรุณาเข้าสู่ระบบ</div>";
-        echo "<meta http-equiv='refresh' content='2;url=index.php'>";
-        exit;
-    }
+	include_once("checklogin.php");
 ?>
 <!doctype html>
 <html lang="th">

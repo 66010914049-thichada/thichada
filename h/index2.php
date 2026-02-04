@@ -1,9 +1,5 @@
 <?php
-	session_start();
-	if (entry($_SESSION['aid'])) {
-		echo "Access Denied" ;
-		exit;
-	}
+	include_once("checklogin.php")
 ?>
 <!doctype html>
 <html>
