@@ -34,14 +34,14 @@ if(isset($_POST['Submit'])){
 	include_once("connectdb.php");
 	
 	$pname = $_POST['pname'];
-	$ext = pathinfo($_FILES['pimages']['name'],PATHINFO_EXTENSION);
+	$ext = pathinfo($_FILES['pimage']['name'],PATHINFO_EXTENSION);
 	$rid = $_POST['rid'];
 	
 	$sql2 = "INSERT INTO `provinces`  VALUES (NULL, '{$pname}','{$ext}','{$rid}')";
 	mysqli_query($conn,$sql2) or die ("เพิ่มข้อมูลไม่ได้");
 	$pid = mysqli_insert_id($conn);
 	//copy($_FILES['pimages']['tmp_name'], "images/".$pid.".".$ext);
-	move_upload_file($_FILES['pimages']['tmp_name'], "images/".$pid.".".$ext);
+	move_uploaded_file($_FILES['pimage']['tmp_name'], "images/".$pid.".".$ext);
 
 }
 ?>
@@ -64,8 +64,8 @@ while ($data = mysqli_fetch_array($rs)){
     	<td><?php echo $data['p_id']; ?> </td>
         <td><?php echo $data['p_name']; ?> </td>
         <td><?php echo $data['r_name']; ?> </td>
-        <td width="80" align="center"><a href="delete_province.php?id=<?php echo $data['p_id']; ?>&ext=<?php echo $data['p_ext'] ; ?>" onClick="return confirm('ยืนยันการลบ');"><img src="images/delete.jpg" width="20"></a></td>
-	</tr>
+		<td><img src="images/<?php echo $data['p_id']; ?>.<?php echo $data['p_ext']; ?>" width="150"></td>
+        <td width="80" align="center"><a href="delete_provinces.php?id=<?php echo $data['p_id']; ?>&ext=<?php echo $data['p_ext']; ?>" onClick="return confirm('ยืนยันการลบ');"><img src="images/delete.jpg" width="20"></a></td>	</tr>
 
 <?php } ?>
 </table>
